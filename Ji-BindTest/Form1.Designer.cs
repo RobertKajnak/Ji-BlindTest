@@ -119,7 +119,7 @@
             this.labelHelp.Font = new System.Drawing.Font("Calibri", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelHelp.Location = new System.Drawing.Point(51, 104);
             this.labelHelp.Name = "labelHelp";
-            this.labelHelp.Size = new System.Drawing.Size(478, 273);
+            this.labelHelp.Size = new System.Drawing.Size(478, 234);
             this.labelHelp.TabIndex = 1;
             this.labelHelp.Text = resources.GetString("labelHelp.Text");
             // 
@@ -136,6 +136,9 @@
             this.Name = "FormMain";
             this.Text = "Ji Blind Test";
             this.Load += new System.EventHandler(this.FormMain_Load);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.FormMain_KeyPress);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FormMain_KeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.FormMain_KeyUp);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);

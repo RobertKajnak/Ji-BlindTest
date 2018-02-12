@@ -121,10 +121,9 @@
     <value>17, 17</value>
   </metadata>
   <data name="labelHelp.Text" xml:space="preserve">
-    <value>              Add a picture by:
+    <value>                 Add a file by:
 Double-clicking in an empty region
-  Pasting a copied image (Ctrl + V)
-(you can paste screenshots as well)
+  Pasting a copied file (Ctrl + V)
          Using the hotkey Ctrl + O
                              or
 Selecting File&gt;Open from the menu</value>

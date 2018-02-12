@@ -12,6 +12,8 @@ namespace Ji_BindTest
 {
     public partial class FormMain : Form
     {
+
+        bool isControlPressed = false;
         public FormMain()
         {
             InitializeComponent();
@@ -62,7 +64,8 @@ namespace Ji_BindTest
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
 
             // Set filter options and filter index.
-            openFileDialog1.Filter = "All Files (*.*)|*.*|Image Files|*.jpg;*.png;*.bmp;*.gif;*.tiff;*.ico;";
+            openFileDialog1.Filter = "All Files (*.*)|*.*|Image Files|*.jpg;*.png;*.bmp;*.gif;*.tiff;*.ico;"+
+                                    "|Music files|*.mp3;*.flac;*.ogg;*.wav|Video Files|*.mp4;*.mkv;*.avi;*.flv";
             openFileDialog1.FilterIndex = 1;
             openFileDialog1.Multiselect = true;
 
@@ -85,6 +88,23 @@ namespace Ji_BindTest
         }
 
         #endregion
+
+        #region File Remove
+        //TODO
+        private void removeSelectedFile()
+        {
+            /*
+            pictureBoxes.Remove(selectedPictureBox);
+            selectedPictureBox.Image.Dispose();
+            selectedPictureBox.Dispose();
+            selectedPictureBox = null;
+            if (this.pictureBoxes.Count == 0)
+            {
+                labelHelp.Visible = true;
+            }*/
+        }
+        #endregion
+
 
         #endregion
 
@@ -140,6 +160,61 @@ namespace Ji_BindTest
         }
         #endregion
 
+        #endregion
+
+        #region Key Events
+        private void FormMain_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            //orderToolStripMenuItem.Text = "" +(int)e.KeyChar;
+            switch (e.KeyChar)
+            {
+                case ((char)27):
+                    this.Dispose();
+                    this.Close();
+                    Application.Exit();
+                    break;
+            }
+        }
+
+        private void FormMain_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case (Keys.O):
+                    LoadFileFromDialog();
+                    break;
+                case (Keys.D):
+                    ClearWorkspace();
+                    break;
+                case (Keys.V):
+                    if (isControlPressed)
+                    {
+                        pasteCtrlVToolStripMenuItem_Click(sender, e);
+                    }
+                    break;
+                case (Keys.ControlKey):
+                    isControlPressed = true;
+                    break;
+                case (Keys.Delete):
+                //intentional fallthrough
+                case (Keys.Back):
+                    removeSelectedFile();
+                    break;
+            }
+        }
+
+        private void FormMain_KeyUp(object sender, KeyEventArgs e)
+        {
+            //orderToolStripMenuItem.Text = "" + e.KeyCode;
+
+            switch (e.KeyCode)
+            {
+                case (Keys.ControlKey):
+                    isControlPressed = false;
+                    break;
+                default: break;
+            }
+        }
         #endregion
 
         #region Other Events
