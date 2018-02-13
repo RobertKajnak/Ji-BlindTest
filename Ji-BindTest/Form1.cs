@@ -6,27 +6,103 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Forms;
 
 namespace Ji_BindTest
 {
-    public partial class FormMain : Form
+    public partial class FormMain : Form, IMessageFilter
     {
-
+        /// <summary>
+        /// or rather is control key pressed
+        /// </summary>
         bool isControlPressed = false;
+        
+        /// <summary>
+        /// the TableLayout was not cooperative, so I decided to do the controls myself.
+        /// I mean, working from scratch is fun, isn't it?
+        /// </summary>
+        
+
+
         public FormMain()
         {
             InitializeComponent();
+            Application.AddMessageFilter(this);
+            this.FormClosed += (s, e) => Application.RemoveMessageFilter(this);
         }
 
 
+        const int WM_KEYDOWN = 0x100;
+        const int WM_KEYUP = 0x101;
+        public bool PreFilterMessage(ref Message m)
+        {
+            if (m.Msg == WM_KEYDOWN)
+            {
+            }
+            else if (m.Msg == WM_KEYUP)
+            {
+                isControlPressed = false;
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        /// Processes the control keys in the whole form, not allowing it to be hogged by controls such as buttons
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="keyData"></param>
+        /// <returns></returns>
+        override protected bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            switch (keyData)
+            {
+                case (Keys.O):
+                    LoadFileFromDialog();
+                    break;
+                case (Keys.D):
+                    ClearWorkspace();
+                    break;
+                case (Keys.V):
+                    if (isControlPressed)
+                    {
+                        pasteItem();
+                    }
+                    break;
+                case (Keys.ControlKey):
+                    isControlPressed = true;
+                    break;
+                case (Keys.Delete):
+                //intentional fallthrough
+                case (Keys.Back):
+                    removeSelectedFile();
+                    break;
+                case (Keys.Escape):
+                    this.Dispose();
+                    this.Close();
+                    Application.Exit();
+                    break;
+            }
+            return true;
+        }
 
         #region Utility Classes and Functions
 
         ///TODO - ob
-        private PictureBox addFileToList(string Filename)
+        private PictureBox addFileToList(string filename)
         {
+            /*if (tableLayoutPanelFiles.Controls.Count == 0)
+            {
+                tableLayoutPanelFiles.RowCount = 0;
+            }
+            //tableLayoutPanelFiles.RowCount++;
+            tableLayoutPanelFiles.Controls.Add(new Label() { Text = filename }, 1, 0);
 
+            if (tableLayoutPanelFiles.Controls[0].Text == null)
+            {
+                MessageBox.Show("Yep");
+            }*/
             return null;
         }
 
@@ -76,6 +152,8 @@ namespace Ji_BindTest
                     addFileToList(filename);
                 }
             }
+
+            labelHelp.Visible = false;
         }
 
         //TODO
@@ -160,6 +238,15 @@ namespace Ji_BindTest
         }
         #endregion
 
+        #region Options
+
+        private void checkBoxRenameFiles_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        #endregion
+
         #endregion
 
         #region Key Events
@@ -176,7 +263,7 @@ namespace Ji_BindTest
             }
         }
 
-        private void FormMain_KeyDown(object sender, KeyEventArgs e)
+        /*private void FormMain_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
@@ -201,7 +288,7 @@ namespace Ji_BindTest
                     removeSelectedFile();
                     break;
             }
-        }
+        }*/
 
         private void FormMain_KeyUp(object sender, KeyEventArgs e)
         {
@@ -219,18 +306,49 @@ namespace Ji_BindTest
 
         #region Other Events
 
-        private void tableLayoutPanel1_DoubleClick(object sender, EventArgs e)
+        private void panelMain_DoubleClick(object sender, EventArgs e)
         {
             LoadFileFromDialog();
         }
 
         private void FormMain_Load(object sender, EventArgs e)
         {
+            /*/// otherwise it suppresses KeyPress events
+            System.Timers.Timer t = new System.Timers.Timer(10);
+            t.AutoReset = false;
+            t.Elapsed += (Object source,ElapsedEventArgs ea) => 
+            {
+                enableCheckBox();
+            };
+            t.Enabled = true;*/
         }
 
-        #endregion
+        /*delegate void EnableCheckBoxDelegate();
+
+        private void enableCheckBox()
+        {
+            if (checkBoxRenameFiles.InvokeRequired)
+            {
+                EnableCheckBoxDelegate d = new EnableCheckBoxDelegate(enableCheckBox);
+                this.Invoke(d, new object[] { });
+            }
+            else
+            {
+                this.checkBoxRenameFiles.Enabled = true;
+            }
+        }*/
 
         #endregion
 
+        #endregion
+
+        private void tableLayoutPanelFiles_Paint(object sender, PaintEventArgs e)
+        {
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("got it");
+        }
     }
 }
