@@ -20,6 +20,12 @@ namespace Ji_BindTest
         private Random RNG = new Random();
 
         /// <summary>
+        /// used to detect if guess buttons need to be enabled
+        /// </summary>
+        bool firstGuess;
+        Button selectedGuess;
+
+        /// <summary>
         /// the TableLayout was not cooperative, so I decided to do the controls myself.
         /// I mean, working from scratch is fun, isn't it?
         /// </summary>
@@ -46,6 +52,8 @@ namespace Ji_BindTest
             Application.AddMessageFilter(this);
             this.FormClosed += (s, e) => Application.RemoveMessageFilter(this);
 
+            firstGuess = true;
+            selectedGuess = null;
             loadedFiles = new List<Entryplet>();
             loadedFilesButtons = new List<Button>();
 
@@ -172,6 +180,8 @@ namespace Ji_BindTest
         private void addGuessButton(string label)
         {
             Button b = new Button();
+            b.Click += new System.EventHandler(this.buttonGuess_Click);
+
             b.Text = label;
             b.Enabled = false;
 
@@ -196,6 +206,8 @@ namespace Ji_BindTest
 
         private void generateGuessButtons()
         {
+            firstGuess = true;
+
             clearGuesses();
             foreach (Entryplet ent in loadedFiles)
             {
@@ -424,9 +436,41 @@ namespace Ji_BindTest
         }
         private void buttonSample_Click(object sender, EventArgs e)
         {
+            if (selectedGuess != null)
+            {
+                selectedGuess.BackColor = SystemColors.Control;
+            }
+            selectedGuess = (Button)sender;
+            selectedGuess.BackColor = Color.AliceBlue;
             string filename = loadedFiles.Find(ent => ent.hiddenName.Equals(((Button)sender).Text)).filePath;
-            playSample(filename);
-            
+
+            if (firstGuess)
+            {
+                firstGuess = false;
+                foreach (Button b in guessButtons)
+                {
+                    b.Enabled = true;
+                }
+            }
+
+            playSample(filename);   
+        }
+
+        private void buttonGuess_Click(object sender, EventArgs e)
+        {
+            string label = ((Button)sender).Text;
+            string trueName = loadedFiles.Find(ent => ent.hiddenName.Equals(selectedGuess.Text)).fileName;
+            if (trueName == label)
+            {
+                MessageBox.Show("You have successfully matched " + selectedGuess.Text + " to " + label, "Congratulations!");
+                selectedGuess.Enabled = false;
+                selectedGuess.BackColor = SystemColors.Control;
+                ((Button)sender).Enabled = false;
+            }
+            else
+            {
+                MessageBox.Show("Try again", "Incorrect!");
+            }
         }
 
         #endregion
