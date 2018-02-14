@@ -17,12 +17,27 @@ namespace Ji_BindTest
         /// or rather is control key pressed
         /// </summary>
         bool isControlPressed = false;
-        
+        private Random RNG = new Random();
+
         /// <summary>
         /// the TableLayout was not cooperative, so I decided to do the controls myself.
         /// I mean, working from scratch is fun, isn't it?
         /// </summary>
-        
+        List<Entryplet> loadedFiles;
+        List<Button> loadedFilesButtons;
+        int positionXLoadedFiles;
+        int positionYLoadedFilesOrigin;
+        int positionYLoadedFilesCurrent;
+        int incrementYLoadedFiles;
+        Size sizeLoadedFiles;
+
+        int positionXGuesses;
+        int positionYGuessesOrigin;
+        int positionYGuessesCurrent;
+        int incrementYGuesses;
+        Size sizeGuesses;
+
+        List<Button> guessButtons;
 
 
         public FormMain()
@@ -30,6 +45,24 @@ namespace Ji_BindTest
             InitializeComponent();
             Application.AddMessageFilter(this);
             this.FormClosed += (s, e) => Application.RemoveMessageFilter(this);
+
+            loadedFiles = new List<Entryplet>();
+            loadedFilesButtons = new List<Button>();
+
+            positionXLoadedFiles = 50;
+            positionYLoadedFilesOrigin = 50;
+            positionYLoadedFilesCurrent = positionYLoadedFilesOrigin;
+            incrementYLoadedFiles = 55;
+            sizeLoadedFiles = new Size(246, 30);
+
+            guessButtons = new List<Button>();
+            positionXGuesses = 350;
+            positionYGuessesOrigin = 50;
+            positionYGuessesCurrent = positionYGuessesOrigin;
+            incrementYGuesses = incrementYLoadedFiles;
+            sizeGuesses = new Size(191,30);
+
+            buttonShuffle.Enabled = false;
         }
 
 
@@ -89,21 +122,101 @@ namespace Ji_BindTest
 
         #region Utility Classes and Functions
 
-        ///TODO - ob
-        private PictureBox addFileToList(string filename)
+        class Entryplet
         {
-            /*if (tableLayoutPanelFiles.Controls.Count == 0)
+            public string filePath { get; }
+            public string fileName { get; }
+            public string hiddenName{ get; set;}
+            
+            public Entryplet(string path)
             {
-                tableLayoutPanelFiles.RowCount = 0;
+                this.filePath = path;
+                int lastIndex = path.LastIndexOf('\\') + 1;
+                ///gets the filename without path, but if a shortened filepath is provided for some reason, displays full name
+                this.fileName = lastIndex == -1 ? path : path.Substring(lastIndex);
             }
-            //tableLayoutPanelFiles.RowCount++;
-            tableLayoutPanelFiles.Controls.Add(new Label() { Text = filename }, 1, 0);
-
-            if (tableLayoutPanelFiles.Controls[0].Text == null)
+            public Entryplet(string path, string fileName)
             {
-                MessageBox.Show("Yep");
-            }*/
-            return null;
+                this.filePath = path;
+                this.fileName = fileName;
+            }
+        }
+        
+        /// <summary>
+        /// Adds a button and the entity to the list
+        /// </summary>
+        /// <param name="filename">the full path of the file</param>
+        private void addFileToList(string filename)
+        {
+            labelHelp.Visible = false;
+            buttonShuffle.Enabled = true;
+
+            Button b = new Button();
+            Entryplet ent = new Entryplet(filename);
+            b.Text = ent.fileName;
+
+            b.Enabled = false;
+            b.Click += new System.EventHandler(this.buttonSample_Click);
+
+            b.Size = sizeLoadedFiles;
+            b.Location = new Point(positionXLoadedFiles, positionYLoadedFilesCurrent);
+            b.TextAlign = ContentAlignment.MiddleCenter;
+            
+            positionYLoadedFilesCurrent += incrementYLoadedFiles;
+
+            loadedFiles.Add(ent);
+            loadedFilesButtons.Add(b);
+            this.panelMain.Controls.Add(b);
+        }
+
+        private void addGuessButton(string label)
+        {
+            Button b = new Button();
+            b.Text = label;
+            b.Enabled = false;
+
+            b.Size = sizeGuesses;
+            b.Location = new Point(positionXGuesses, positionYGuessesCurrent);
+            b.TextAlign = ContentAlignment.MiddleCenter;
+
+            positionYGuessesCurrent += incrementYGuesses;
+            
+            guessButtons.Add(b);
+            this.panelMain.Controls.Add(b);
+        }
+
+        private void clearGuesses()
+        {
+            foreach (Button b in guessButtons)
+            {
+                this.panelMain.Controls.Remove(b);
+            }
+            positionYGuessesCurrent = positionYGuessesOrigin;
+        }
+
+        private void generateGuessButtons()
+        {
+            clearGuesses();
+            foreach (Entryplet ent in loadedFiles)
+            {
+                addGuessButton(ent.fileName);
+            }
+
+            loadedFiles = loadedFiles.OrderBy(a => RNG.Next()).ToList<Entryplet>();
+
+            int i = 0;
+            foreach (Entryplet ent in loadedFiles)
+            {
+                ent.hiddenName = "Sample " + i;
+                loadedFilesButtons[i].Text = ent.hiddenName;
+                loadedFilesButtons[i].Enabled = true;
+                i++;
+            }
+        }
+
+        private void playSample(string filename)
+        {
+            System.Diagnostics.Process.Start(filename);
         }
 
         #region File Insert and Load
@@ -153,7 +266,6 @@ namespace Ji_BindTest
                 }
             }
 
-            labelHelp.Visible = false;
         }
 
         //TODO
@@ -304,6 +416,21 @@ namespace Ji_BindTest
         }
         #endregion
 
+        #region Button Events
+
+        private void buttonShuffle_Click(object sender, EventArgs e)
+        {
+            generateGuessButtons();
+        }
+        private void buttonSample_Click(object sender, EventArgs e)
+        {
+            string filename = loadedFiles.Find(ent => ent.hiddenName.Equals(((Button)sender).Text)).filePath;
+            playSample(filename);
+            
+        }
+
+        #endregion
+
         #region Other Events
 
         private void panelMain_DoubleClick(object sender, EventArgs e)
@@ -321,6 +448,26 @@ namespace Ji_BindTest
                 enableCheckBox();
             };
             t.Enabled = true;*/
+        }
+
+        private void FormMain_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Copy;
+        }
+
+        private void FormMain_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            foreach (string file in files)
+                try
+                {
+                    addFileToList(file);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
         }
 
         /*delegate void EnableCheckBoxDelegate();
@@ -346,9 +493,6 @@ namespace Ji_BindTest
         {
         }
 
-        private void label2_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("got it");
-        }
+
     }
 }

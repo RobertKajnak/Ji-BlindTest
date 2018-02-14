@@ -38,7 +38,7 @@
             this.helpAboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.labelHelp = new System.Windows.Forms.Label();
             this.panelMain = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
+            this.buttonShuffle = new System.Windows.Forms.Button();
             this.menuStripMain.SuspendLayout();
             this.panelMain.SuspendLayout();
             this.SuspendLayout();
@@ -113,27 +113,27 @@
             // 
             // panelMain
             // 
-            this.panelMain.Controls.Add(this.button1);
+            this.panelMain.Controls.Add(this.buttonShuffle);
             this.panelMain.Location = new System.Drawing.Point(0, 27);
             this.panelMain.Name = "panelMain";
             this.panelMain.Size = new System.Drawing.Size(584, 434);
             this.panelMain.TabIndex = 2;
             this.panelMain.DoubleClick += new System.EventHandler(this.panelMain_DoubleClick);
             // 
-            // button1
+            // buttonShuffle
             // 
-            this.button1.Location = new System.Drawing.Point(39, 33);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
+            this.buttonShuffle.Location = new System.Drawing.Point(93, 10);
+            this.buttonShuffle.Name = "buttonShuffle";
+            this.buttonShuffle.Size = new System.Drawing.Size(131, 28);
+            this.buttonShuffle.TabIndex = 2;
+            this.buttonShuffle.Text = "Suffle!";
+            this.buttonShuffle.UseVisualStyleBackColor = true;
+            this.buttonShuffle.Click += new System.EventHandler(this.buttonShuffle_Click);
             // 
             // FormMain
             // 
             this.AllowDrop = true;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(584, 461);
             this.Controls.Add(this.menuStripMain);
             this.Controls.Add(this.labelHelp);
@@ -142,6 +142,8 @@
             this.Name = "FormMain";
             this.Text = "Ji Blind Test";
             this.Load += new System.EventHandler(this.FormMain_Load);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.FormMain_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.FormMain_DragEnter);
             this.menuStripMain.ResumeLayout(false);
             this.menuStripMain.PerformLayout();
             this.panelMain.ResumeLayout(false);
@@ -160,7 +162,7 @@
         private System.Windows.Forms.ToolStripMenuItem helpAboutToolStripMenuItem;
         private System.Windows.Forms.Label labelHelp;
         private System.Windows.Forms.Panel panelMain;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonShuffle;
     }
 }
 
