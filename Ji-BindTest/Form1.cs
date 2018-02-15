@@ -19,6 +19,7 @@ namespace Ji_BindTest
         bool isControlPressed = false;
         private Random RNG = new Random();
 
+        #region Graphics related variables
         /// <summary>
         /// used to detect if guess buttons need to be enabled
         /// </summary>
@@ -44,7 +45,7 @@ namespace Ji_BindTest
         Size sizeGuesses;
 
         List<Button> guessButtons;
-
+        #endregion
 
         public FormMain()
         {
@@ -73,63 +74,13 @@ namespace Ji_BindTest
             buttonShuffle.Enabled = false;
         }
 
-
-        const int WM_KEYDOWN = 0x100;
-        const int WM_KEYUP = 0x101;
-        public bool PreFilterMessage(ref Message m)
-        {
-            if (m.Msg == WM_KEYDOWN)
-            {
-            }
-            else if (m.Msg == WM_KEYUP)
-            {
-                isControlPressed = false;
-            }
-            return false;
-        }
-
-
-        /// <summary>
-        /// Processes the control keys in the whole form, not allowing it to be hogged by controls such as buttons
-        /// </summary>
-        /// <param name="msg"></param>
-        /// <param name="keyData"></param>
-        /// <returns></returns>
-        override protected bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            switch (keyData)
-            {
-                case (Keys.O):
-                    LoadFileFromDialog();
-                    break;
-                case (Keys.D):
-                    ClearWorkspace();
-                    break;
-                case (Keys.V):
-                    if (isControlPressed)
-                    {
-                        pasteItem();
-                    }
-                    break;
-                case (Keys.ControlKey):
-                    isControlPressed = true;
-                    break;
-                case (Keys.Delete):
-                //intentional fallthrough
-                case (Keys.Back):
-                    removeSelectedFile();
-                    break;
-                case (Keys.Escape):
-                    this.Dispose();
-                    this.Close();
-                    Application.Exit();
-                    break;
-            }
-            return true;
-        }
+        
 
         #region Utility Classes and Functions
 
+        /// <summary>
+        /// Contains the (file path, file name, hidden name(e.g. Sample 1)) set
+        /// </summary>
         class Entryplet
         {
             public string filePath { get; }
@@ -151,7 +102,7 @@ namespace Ji_BindTest
         }
         
         /// <summary>
-        /// Adds a button and the entity to the list
+        /// Adds a button and the entity to the list and creates the button controls
         /// </summary>
         /// <param name="filename">the full path of the file</param>
         private void addFileToList(string filename)
@@ -177,6 +128,10 @@ namespace Ji_BindTest
             this.panelMain.Controls.Add(b);
         }
 
+        /// <summary>
+        /// Generates a button on the right, based on the label. This should be already shortened by creating the Entryplet first
+        /// </summary>
+        /// <param name="label">Short file name</param>
         private void addGuessButton(string label)
         {
             Button b = new Button();
@@ -195,6 +150,9 @@ namespace Ji_BindTest
             this.panelMain.Controls.Add(b);
         }
 
+        /// <summary>
+        /// Removes the buttons associated from the guesses, both from the list and the graphics control collection.
+        /// </summary>
         private void clearGuesses()
         {
             foreach (Button b in guessButtons)
@@ -204,6 +162,10 @@ namespace Ji_BindTest
             positionYGuessesCurrent = positionYGuessesOrigin;
         }
 
+        /// <summary>
+        /// Generates the buttons on the rigth used for guess verification based on the Entryplet list loadedFiles.
+        /// The list is randomized in the process
+        /// </summary>
         private void generateGuessButtons()
         {
             firstGuess = true;
@@ -226,6 +188,24 @@ namespace Ji_BindTest
             }
         }
 
+        /// <summary>
+        /// Renames all the files from the list to hide true identity when windows plays the file.
+        /// <para>The exension is also renamed to be the same, but does not modify file contents</para>
+        /// </summary>
+        private void renameFiles()
+        {
+
+        }
+
+        private void revertFileNames()
+        {
+
+        }
+
+        /// <summary>
+        /// Requests windows to open the file (with default application)
+        /// </summary>
+        /// <param name="filename">Name of the file</param>
         private void playSample(string filename)
         {
             System.Diagnostics.Process.Start(filename);
@@ -307,7 +287,6 @@ namespace Ji_BindTest
         }
         #endregion
 
-
         #endregion
 
         #region Event Handlers
@@ -374,6 +353,60 @@ namespace Ji_BindTest
         #endregion
 
         #region Key Events
+
+        const int WM_KEYDOWN = 0x100;
+        const int WM_KEYUP = 0x101;
+        public bool PreFilterMessage(ref Message m)
+        {
+            if (m.Msg == WM_KEYDOWN)
+            {
+            }
+            else if (m.Msg == WM_KEYUP)
+            {
+                isControlPressed = false;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Processes the control keys in the whole form, not allowing it to be hogged by controls such as buttons
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="keyData"></param>
+        /// <returns></returns>
+        override protected bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            switch (keyData)
+            {
+                case (Keys.O):
+                    LoadFileFromDialog();
+                    break;
+                case (Keys.D):
+                    ClearWorkspace();
+                    break;
+                case (Keys.V):
+                    if (isControlPressed)
+                    {
+                        pasteItem();
+                    }
+                    break;
+                case (Keys.ControlKey):
+                    isControlPressed = true;
+                    break;
+                case (Keys.Delete):
+                //intentional fallthrough
+                case (Keys.Back):
+                    removeSelectedFile();
+                    break;
+                case (Keys.Escape):
+                    this.Dispose();
+                    this.Close();
+                    Application.Exit();
+                    break;
+            }
+            return true;
+        }
+
         private void FormMain_KeyPress(object sender, KeyPressEventArgs e)
         {
             //orderToolStripMenuItem.Text = "" +(int)e.KeyChar;
@@ -433,7 +466,15 @@ namespace Ji_BindTest
         private void buttonShuffle_Click(object sender, EventArgs e)
         {
             generateGuessButtons();
+            renameFiles();
         }
+
+        /// <summary>
+        /// Highlights the currently played sample's button and enables guess buttons, if not already enabled.
+        /// <para> All sample/hidden name/loadedFileList (on the left) should implement this on creation.</para>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void buttonSample_Click(object sender, EventArgs e)
         {
             if (selectedGuess != null)
@@ -456,6 +497,13 @@ namespace Ji_BindTest
             playSample(filename);   
         }
 
+        /// <summary>
+        /// Verifies if the sample matches the selected file button. Displays a MessageBox:
+        /// <para>On failure promts the user to try again<br/></para>
+        /// <para>On success, congratulates and disables the "sample" and the "guess" buttons</para>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void buttonGuess_Click(object sender, EventArgs e)
         {
             string label = ((Button)sender).Text;
@@ -514,29 +562,18 @@ namespace Ji_BindTest
                 }
         }
 
-        /*delegate void EnableCheckBoxDelegate();
-
-        private void enableCheckBox()
-        {
-            if (checkBoxRenameFiles.InvokeRequired)
-            {
-                EnableCheckBoxDelegate d = new EnableCheckBoxDelegate(enableCheckBox);
-                this.Invoke(d, new object[] { });
-            }
-            else
-            {
-                this.checkBoxRenameFiles.Enabled = true;
-            }
-        }*/
-
-        #endregion
-
-        #endregion
-
         private void tableLayoutPanelFiles_Paint(object sender, PaintEventArgs e)
         {
         }
 
+        private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            revertFileNames();
+        }
+
+        #endregion
+
+        #endregion
 
     }
 }
