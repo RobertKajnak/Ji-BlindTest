@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
@@ -122,6 +123,27 @@ namespace Ji_BindTest
         /// <param name="filename">the full path of the file</param>
         private void addFileToList(string filename)
         {
+            foreach (Entryplet e in loadedFiles)
+            {
+                if (e.filePath.Equals(filename))
+                {
+                    MessageBox.Show("The file has already been added.\nAdding the same file multiple times is currently not supported", "Could not add file");
+                    return;
+                }
+                ///TODO: do some extensive testing on this
+                /*Regex rgx = new Regex(@"Sample (\d*.");
+                if (rgx.IsMatch(filename))
+                {
+                    MessageBox.Show("Filenames of format \"Sample [n].*\" are not supported","Could not add file");
+                    return;
+                }*/
+                if (filename.Contains("Sample"))
+                {
+                    MessageBox.Show("Filenames containting \"Sample\" are not supported", "Could not add file");
+                    return;
+                }
+            }
+
             labelHelp.Visible = false;
             buttonShuffle.Enabled = true;
 
@@ -174,7 +196,7 @@ namespace Ji_BindTest
             {
                 this.panelMain.Controls.Remove(b);
             }
-            guessButtons = new List<Button>();
+            guessButtons.Clear();
             positionYGuessesCurrent = positionYGuessesOrigin;
         }
 
@@ -307,11 +329,21 @@ namespace Ji_BindTest
 
         }
 
-        //TODO
+        
         private void ClearWorkspace()
         {
-            //selectedPictureBox = null;
-            //pictureBoxes.Clear();
+            revertFileNames();
+            clearGuesses();
+
+            ///This could be a separate function,  however it is only safe to call after <see cref="clearGuesses"/> has been called.
+            foreach (Button b in loadedFilesButtons)
+            {
+                this.panelMain.Controls.Remove(b);
+            }
+            loadedFilesButtons.Clear();
+            loadedFiles.Clear();
+            positionYLoadedFilesCurrent = positionYLoadedFilesOrigin;
+
             System.GC.Collect();
             labelHelp.Visible = true;
         }
@@ -352,6 +384,15 @@ namespace Ji_BindTest
             {
                 pasteCtrlVToolStripMenuItem.Enabled = false;
             }
+
+            if (loadedFiles.Count == 0)
+            {
+                clearWorkspaceCtrlDToolStripMenuItem.Enabled = false;
+            }
+            else
+            {
+                clearWorkspaceCtrlDToolStripMenuItem.Enabled = true;
+            }
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -366,7 +407,7 @@ namespace Ji_BindTest
 
         private void clearWorkspaceCtrlDToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            ClearWorkspace();
         }
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -380,19 +421,26 @@ namespace Ji_BindTest
 
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            String text = "Quick and easy way of creating a compilation/story from distinct images.\n" +
-                "Offers the possibility to rescale the image after generation, should it be necessary.\n" +
+            String text = "Ever wanted to be able to differentiate two pieces of music or image or something else,"+
+                " without asking for others to open them for you?\n" +
+                "Now you can!"+
                 "\n\n" +
-                "The Ignore DPI feature (on by default) only consideres the resolution of the images on compositing.\n" +
-                "Disabling it will scale the images based on DPI, 1:1 pixel ratio being at 96DPI (value comes from Visual Studio or Microsoft or sthg).\n" +
-                "For example: putting a 182 DPI image with 800*600 pixels will result in an image with 400*300 pixels.\n" +
+                "Maybe you have two pieces of music, one .flac, one .mp3\n"+
+                "You are curious if the .flac version was originally uncompressed or was it 'upscaled' from a compressed format, such as mp3"+
+                "If you opened them yourself, maybe you would be subcontiously biased to say the flac is better."+
+                "You could ask a friend, but having someone do clicking is unconfortable for both parties."+
+                "The solution? Use this app!"+
                 "\n\n" +
-                "\"Lock-Load Files\" locks the added files to the application so they can't be modified externally.\n" +
-                "Might fix some issues with some wierder file configurations, but is usually not necessary" +
-                "Only has effect on files added after changing the option (i.e. does not reload files already inside the application)\n" +
-                "\n\n" +
-                "To report any bugs of issues visit the repo: \n" +
-                "https://github.com/RobertKajnak/ImageStoryMerge";
+                "Usage:\n"+
+                "Add the files you wish to compare. Click 'Suffle'. The filenames will be replaced with 'Sample [n]'. The extensions "+
+                "Will be replaced by a randomly selected extension from the added files.\n"+ 
+                "Click the sample to play it and select it.\n"+
+                "Next click the filename that you think matches, and the program will check it and tell you if you hit or missed. That's it!\n"+
+                "Want to test an other set? Click File>Clear Workspace. If you want to add a file after shuffling, just add it, no need to "+
+                "clear the workspace."+
+                "\n\n"+
+                "To report any bugs or issues visit the repo: \n" +
+                "https://github.com/RobertKajnak/Ji-BlindTest";
             String caption = "Help/About";
             MessageBox.Show(text, caption);
         }
