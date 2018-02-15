@@ -218,6 +218,7 @@ namespace Ji_BindTest
             int extensionIndex = loadedFiles[0].filePath.LastIndexOf('.');
             this.extension = extensionIndex == -1 ? "" : loadedFiles[0].filePath.Substring(extensionIndex);
 
+            ///TODO if the file is already is named "Sample x.y", it cannot be renamed to the already existing file
             foreach (Entryplet ent in loadedFiles)
             {
                 //MessageBox.Show(ent.filePath, ent.getHiddenPath(extension));
@@ -266,15 +267,9 @@ namespace Ji_BindTest
 
         #region File Insert and Load
 
-        //TODO - this
         private void pasteItem()
         {
             IDataObject iData = Clipboard.GetDataObject();
-            //TODO check this
-            if (iData.GetDataPresent(DataFormats.FileDrop))
-            {
-                //addFileToList();
-            }
 
             if (iData.GetDataPresent(DataFormats.FileDrop))
             {
@@ -282,17 +277,16 @@ namespace Ji_BindTest
                 {
                     try
                     {
-                        //addPictureBox(ImageFromFile(v));
+                        addFileToList(v);
                     }
                     catch
                     {
-                        Console.WriteLine("Text does not leat do a valid image file");
+                        Console.WriteLine("Text does not lead do a valid  file");
                     }
                 }
             }
         }
 
-        //TODO
         private void LoadFileFromDialog()
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
@@ -347,6 +341,18 @@ namespace Ji_BindTest
         #region Menu Events
 
         #region File
+
+        private void fileToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (Clipboard.GetDataObject().GetDataPresent(DataFormats.FileDrop))
+            {
+                pasteCtrlVToolStripMenuItem.Enabled = true;
+            }
+            else
+            {
+                pasteCtrlVToolStripMenuItem.Enabled = false;
+            }
+        }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -435,11 +441,12 @@ namespace Ji_BindTest
                 case (Keys.D):
                     ClearWorkspace();
                     break;
+                    ///TODO - fix control detection
                 case (Keys.V):
-                    if (isControlPressed)
-                    {
+                    //if (isControlPressed)
+                    //{
                         pasteItem();
-                    }
+                    //}
                     break;
                 case (Keys.ControlKey):
                     isControlPressed = true;
@@ -466,33 +473,6 @@ namespace Ji_BindTest
                     break;
             }
         }
-
-        /*private void FormMain_KeyDown(object sender, KeyEventArgs e)
-        {
-            switch (e.KeyCode)
-            {
-                case (Keys.O):
-                    LoadFileFromDialog();
-                    break;
-                case (Keys.D):
-                    ClearWorkspace();
-                    break;
-                case (Keys.V):
-                    if (isControlPressed)
-                    {
-                        pasteCtrlVToolStripMenuItem_Click(sender, e);
-                    }
-                    break;
-                case (Keys.ControlKey):
-                    isControlPressed = true;
-                    break;
-                case (Keys.Delete):
-                //intentional fallthrough
-                case (Keys.Back):
-                    removeSelectedFile();
-                    break;
-            }
-        }*/
 
         private void FormMain_KeyUp(object sender, KeyEventArgs e)
         {
@@ -629,6 +609,7 @@ namespace Ji_BindTest
         #endregion
 
         #endregion
+
 
     }
 }

@@ -56,6 +56,7 @@
             // 
             // fileToolStripMenuItem1
             // 
+            this.fileToolStripMenuItem1.BackColor = System.Drawing.SystemColors.Control;
             this.fileToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openToolStripMenuItem,
             this.pasteCtrlVToolStripMenuItem,
@@ -64,6 +65,7 @@
             this.fileToolStripMenuItem1.Name = "fileToolStripMenuItem1";
             this.fileToolStripMenuItem1.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem1.Text = "File";
+            this.fileToolStripMenuItem1.Click += new System.EventHandler(this.fileToolStripMenuItem1_Click);
             // 
             // openToolStripMenuItem
             // 
