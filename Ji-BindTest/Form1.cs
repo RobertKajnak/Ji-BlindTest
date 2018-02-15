@@ -17,7 +17,15 @@ namespace Ji_BindTest
         /// or rather is control key pressed
         /// </summary>
         bool isControlPressed = false;
+
+        /// <summary>
+        /// The extension of all files needs to be kept between <see cref="renameFiles"/> and <see cref="revertFileNames"/>, as 
+        /// the <see cref="Entryplet.hiddenName"/> field does not keep the extension data.
+        /// <para>The exension is not kept between shuffles, but is consistent within shuttles.</para>
+        /// </summary>
+        private string extension = null;
         private Random RNG = new Random();
+        ///TODO: allow files to be added more than once -- currently untested
 
         #region Graphics related variables
         /// <summary>
@@ -74,8 +82,6 @@ namespace Ji_BindTest
             buttonShuffle.Enabled = false;
         }
 
-        
-
         #region Utility Classes and Functions
 
         /// <summary>
@@ -86,6 +92,15 @@ namespace Ji_BindTest
             public string filePath { get; }
             public string fileName { get; }
             public string hiddenName{ get; set;}
+            ///TODO: moveextension to a static variable within class
+            public string getHiddenPath(string extension)
+            {
+                if (this.hiddenName == null || this.hiddenName.Equals(""))
+                    throw new Exception("The hidden file names are missing");
+                string path = this.filePath.Substring(0, this.filePath.IndexOf(this.fileName));
+
+                return path + this.hiddenName + extension;
+            }
             
             public Entryplet(string path)
             {
@@ -159,6 +174,7 @@ namespace Ji_BindTest
             {
                 this.panelMain.Controls.Remove(b);
             }
+            guessButtons = new List<Button>();
             positionYGuessesCurrent = positionYGuessesOrigin;
         }
 
@@ -181,7 +197,7 @@ namespace Ji_BindTest
             int i = 0;
             foreach (Entryplet ent in loadedFiles)
             {
-                ent.hiddenName = "Sample " + i;
+                ent.hiddenName = "Sample " + (i+1);
                 loadedFilesButtons[i].Text = ent.hiddenName;
                 loadedFilesButtons[i].Enabled = true;
                 i++;
@@ -194,12 +210,41 @@ namespace Ji_BindTest
         /// </summary>
         private void renameFiles()
         {
+            if (this.extension != null)
+            {
+                revertFileNames();
+            }
 
+            int extensionIndex = loadedFiles[0].filePath.LastIndexOf('.');
+            this.extension = extensionIndex == -1 ? "" : loadedFiles[0].filePath.Substring(extensionIndex);
+
+            foreach (Entryplet ent in loadedFiles)
+            {
+                //MessageBox.Show(ent.filePath, ent.getHiddenPath(extension));
+                System.IO.File.Move(ent.filePath, ent.getHiddenPath(extension));
+
+            }
         }
 
         private void revertFileNames()
         {
+            ///The files have not yet been renamed, therefore they cannot be reverted
+            if (this.extension == null)
+                return;
 
+            int i = 1;
+            foreach (Entryplet ent in loadedFiles)
+            {
+                ///if a new file is added after shuffling, the hidden filename would not work as it has not yet been renamed.
+                if (i > guessButtons.Count)
+                    break;
+                string path = ent.filePath.Substring(0, ent.filePath.IndexOf(ent.fileName));
+
+                //MessageBox.Show(path + ent.hiddenName + extension, ent.filePath);
+                System.IO.File.Move(ent.getHiddenPath(extension), ent.filePath);
+                i++;
+            }
+            this.extension = null;
         }
 
         /// <summary>
@@ -209,6 +254,14 @@ namespace Ji_BindTest
         private void playSample(string filename)
         {
             System.Diagnostics.Process.Start(filename);
+        }
+
+        private void CloseApp()
+        {
+            revertFileNames();
+            this.Dispose();
+            this.Close();
+            Application.Exit();
         }
 
         #region File Insert and Load
@@ -312,9 +365,7 @@ namespace Ji_BindTest
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Dispose();
-            this.Close();
-            Application.Exit();
+            CloseApp();
         }
 
         #endregion
@@ -399,9 +450,7 @@ namespace Ji_BindTest
                     removeSelectedFile();
                     break;
                 case (Keys.Escape):
-                    this.Dispose();
-                    this.Close();
-                    Application.Exit();
+                    CloseApp();
                     break;
             }
             return true;
@@ -413,9 +462,7 @@ namespace Ji_BindTest
             switch (e.KeyChar)
             {
                 case ((char)27):
-                    this.Dispose();
-                    this.Close();
-                    Application.Exit();
+                    CloseApp();
                     break;
             }
         }
@@ -465,6 +512,7 @@ namespace Ji_BindTest
 
         private void buttonShuffle_Click(object sender, EventArgs e)
         {
+            revertFileNames();
             generateGuessButtons();
             renameFiles();
         }
@@ -477,13 +525,13 @@ namespace Ji_BindTest
         /// <param name="e"></param>
         private void buttonSample_Click(object sender, EventArgs e)
         {
-            if (selectedGuess != null)
+            if (selectedGuess != null && selectedGuess.Enabled)
             {
-                selectedGuess.BackColor = SystemColors.Control;
+                selectedGuess.BackColor = SystemColors.ControlLight;
             }
             selectedGuess = (Button)sender;
             selectedGuess.BackColor = Color.AliceBlue;
-            string filename = loadedFiles.Find(ent => ent.hiddenName.Equals(((Button)sender).Text)).filePath;
+            string filename = loadedFiles.Find(ent => ent.hiddenName.Equals(((Button)sender).Text)).getHiddenPath(extension);
 
             if (firstGuess)
             {
@@ -514,6 +562,13 @@ namespace Ji_BindTest
                 selectedGuess.Enabled = false;
                 selectedGuess.BackColor = SystemColors.Control;
                 ((Button)sender).Enabled = false;
+                
+                foreach (Button b in guessButtons)
+                {
+                    if (b.Enabled == true)
+                        return;
+                }
+                MessageBox.Show("You have guessed all the samples!","Congratulations!");
             }
             else
             {

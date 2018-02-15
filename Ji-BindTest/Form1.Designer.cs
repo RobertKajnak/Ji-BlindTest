@@ -113,6 +113,7 @@
             // 
             // panelMain
             // 
+            this.panelMain.AutoScroll = true;
             this.panelMain.Controls.Add(this.buttonShuffle);
             this.panelMain.Location = new System.Drawing.Point(0, 27);
             this.panelMain.Name = "panelMain";
